@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration 
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias type="com.home.pooh.domain.Admin" 		alias="Admin"/>
+		<typeAlias type="com.home.pooh.domain.Member" 		alias="Member"/>
+		<typeAlias type="com.home.pooh.domain.Board" 		alias="Board"/>
+		<typeAlias type="com.home.pooh.domain.Comment" 		alias="Comment"/>
+		<typeAlias type="com.home.pooh.domain.Recomment" 		alias="Recomment"/>
+		<typeAlias type="com.home.pooh.domain.BoardType" 		alias="BoardType"/>
+		<typeAlias type="com.home.pooh.domain.BoardFiles" 		alias="BoardFiles"/>
+		<typeAlias type="com.home.pooh.domain.InputFiles" 		alias="InputFiles"/>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="com/home/pooh/mybatis/AdminMapper.xml"/>
+		<mapper resource="com/home/pooh/mybatis/MemberMapper.xml"/>
+		<mapper resource="com/home/pooh/mybatis/BoardMapper.xml"/>
+		<mapper resource="com/home/pooh/mybatis/Comment.xml"/>
+		<mapper resource="com/home/pooh/mybatis/Recomment.xml"/>
+		<mapper resource="com/home/pooh/mybatis/BoardFilesMapper.xml"/>
+		<mapper resource="com/home/pooh/mybatis/InputFilesMapper.xml"/>
+	</mappers>
+</configuration>

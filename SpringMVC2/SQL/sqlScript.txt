@@ -1,0 +1,12 @@
+create table member(
+member_id int primary key auto_increment
+, user_id varchar(20)
+, password varchar(20)
+, name varchar(20)
+, filename varchar(30)
+, regdate timestamp default now()
+, auth int default 2
+) default character set utf8;
+
+insert into member(user_id, password, name, auth) values('master','1234','admin',0);
+insert into member(user_id, password, name) values('user','1234','client');

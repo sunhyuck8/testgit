@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<!-- 시나리오
+오투잼만들기
+1. div를 내가 지정하든 노래를감지하든 떨군다. 그러려면 div를 동적으로 다 처리를 해야겠지?(미구현)
+2.키보드를 눌렀을때, 지정라인에서 누르면 good인지 great 인지 판별해야 함 (미구현)
+3. 맞춘 값에 따라서 점수가 측정 (미구현)
+4. 틀릴시 오른쪽 hp바 만들고 hp감소 (미구현)
+5. 노래를 고를수 있어야함 노래도 추가 w3school 참조 노래나오게하는 법 (미구현)
+6. 직접 쳐도 되지만 속상하니 클래스를 이용해보자 
+-->
+    <!-- 노래 실행파일 -->
+    <audio id="myVideo" >
+    <source src="sing1.mp3" type="audio/mp3">
+    </audio>
+<script src="./O2jam.js"></script>
+<script src="./noteSaveBox.js"></script>
+<!-- <script src="./sing3.js"></script> -->
+<script src="./NoteDB.js"></script>
+<script>
+    var barSize =5; //내려오는 바 개수
+    var noteBarWrap;    //내려오는 바의 감싸는 div
+    var notebarArray = new Array(); //내려오는 각각의 div 의 배열
+    var buttonBarArray = new Array(); //note바 밑에 버튼 배열
+    var noteBarBottomWrap; // 버튼을 누를 div 를 감싸는 wrapper
+    var buttonArray = [];  //버튼객체를 모아놓은 배열
+    var buttonTextArray = ["s", "d", "space", "k","l"];  //버튼에 들어갈 innerText
+    var downNoteArray = [];
+    var targetpoint=[];
+    var startFlag =false;  // 게임루프를 돌게 할지 말지 결정하는 변수
+    var dd; //임시 버튼 아이디 
+    var time ; // 노트 내려오는 시간을 판별하기 위한 변수
+    var sliceCount = 0;
+    var scoreBox ; // 점수를 나타내는 박스
+    var returnBox =[];
+    var songArray = ["song1.mp3","song2.mp3","song3.mp3","song4.mp3"];
+    var songPicArray = ["song1.png","song2.png","song3.png","song4.png"];
+    var vid = document.getElementById("myVideo");  // 노래 관련 총괄 변수
+    var blink ; // 스페이스바 누르라는 텍스트 
+    var speed =10;
+
+
+            var testword = 10;
+            let selectNum = "";
+            var temp = location.href.split("?");
+            selectNum = temp[1].split(":")[1]
+            console.log("selectNum은"+selectNum);
+
+            var note = noteDB[selectNum];
+            vid.src="../static/song/song"+selectNum+".mp3";
+            if(selectNum == 0){
+            alert("그림을 좌우로 드래그 하신 후 버튼을 눌러보세요 \n 키 S ,D , SpaceBar, K ,L ");
+            // return;
+            location.href="../intro.html";
+            }
+    //초기화 후 실행함수
+    function init(){
+    
+        vid.volume = 0.5;
+        dd = document.getElementById("dis");
+        dd.focus();
+        noteBarWrap = document.getElementById("noteBarWrap");
+        noteBarBottomWrap = document.getElementById("noteBarBottomWrap");
+        noteBarBottomWrap.style.background = "black";
+        makeNoteBar();
+       makeButtonBar();
+
+       document.body.addEventListener("keydown", function(){
+           inputButton();
+       });
+       document.body.addEventListener("keyup", function(){
+           outputButton();
+       });
+       fallNoteBar();
+       targetPoint();
+       scoreBar();
+       rightboxImg();
+       blinkText();
+    };
+
+
+    //내려오는 바 만들기 ---------------디자인동적생성
+    function makeNoteBar(){
+        for(var i = 0;i<barSize;i++){
+          var bar = new Stick(noteBarWrap, 100/barSize, 100, 0, 0, 0, "");
+          notebarArray.push(bar);
+          notebarArray[i].div.style.background = "black";
+         }
+        buttonImgEffect( notebarArray[0].div , "button1.png");
+        buttonImgEffect( notebarArray[1].div , "button2.png");
+        buttonImgEffect( notebarArray[2].div , "button3.png");
+        buttonImgEffect( notebarArray[3].div , "button2.png");
+        buttonImgEffect( notebarArray[4].div , "button1.png");
+    }
+    //버튼 누를 div 바 만들기 ---------------디자인동적생성
+    function makeButtonBar(){
+        var button = document.createElement("button");
+        for(var i = 0;i<barSize;i++){
+            var bar = new Stick(noteBarBottomWrap, 100/barSize, 25, 0, 0, 0, "");
+            buttonBarArray.push(bar);
+        }
+
+        buttonImg(buttonBarArray[0].div, "button1.png", "");
+        buttonImg(buttonBarArray[1].div, "button2.png", "");
+        buttonImg(buttonBarArray[2].div, "button3.png", "");
+        buttonImg(buttonBarArray[3].div, "button2.png", "");
+        buttonImg(buttonBarArray[4].div, "button1.png", "");
+    
+    }
+   
+
+    //점수를 나타낼 div ---------------디자인동적생성
+    function scoreBar(){
+        scoreBox = new Stick(noteBarBottomWrap, 100, 75, 0, 0, 0, "1000");
+        // scoreBox.div.style.paddingTop = "10%";
+        scoreBox.div.style.fontSize = "110px";
+        scoreBox.div.style.background = "black";
+        scoreBox.div.style.color = "white";
+
+    }
+
+
+    //버튼 누를때 이벤트
+    function inputButton(){
+        checkTime(event.keyCode, time); //시간표기하는함수  -----------record 버튼
+        switch(event.keyCode){
+            case 83 : rotaImg(buttonBarArray[0] , 180, notebarArray[0]),testword=0;break;
+            case 68 : rotaImg(buttonBarArray[1] , 180, notebarArray[1]),testword=1;break;
+            case 32 : rotaImg(buttonBarArray[2] , 180, notebarArray[2]),testword=2;break;
+            case 75 : rotaImg(buttonBarArray[3] , 180, notebarArray[3]),testword=3;break;
+            case 76 : rotaImg(buttonBarArray[4] , 180, notebarArray[4]),testword=4;break;
+        }
+    }
+    //버튼 땔때 이벤트
+    function outputButton(){
+        switch(event.keyCode){
+            case 83 : rotaImg(buttonBarArray[0] , 0),testword=10;break;
+            case 68 : rotaImg(buttonBarArray[1] , 0),testword=10;break;
+            case 32 : rotaImg(buttonBarArray[2] , 0),testword=10;break;
+            case 75 : rotaImg(buttonBarArray[3] , 0),testword=10;break;
+            case 76 : rotaImg(buttonBarArray[4] , 0),testword=10;break;
+        }
+    }
+    function hitNote(){
+
+    }
+
+    //바에 떨어질 noteBar 만들기/////////////////////////////////////여기가 문제임
+    function fallNoteBar(){
+        var box = [];
+            for(var i = 0;i<note.length;i++){
+                for(var j=0;j<note[i].length;j++){
+                    var bar = new downNote(notebarArray[i].div, 100,4,0,0,1,note[i][j],i, j);
+                    box.push(bar);
+                }
+                downNoteArray.push(box);
+                var box=[];
+            }
+        }
+
+
+    //바 타겟 div 만들기
+    function targetPoint(){
+        for(var i = 0;i<barSize;i++){
+            var box = new pointTarget(notebarArray[i].div, 100, 6, 0,88, "");
+            targetpoint.push(box);
+            buttonImg(targetpoint[i].div, "blueLaser.png",1);
+            targetpoint[i].div.style.opacity ="0.5" ;
+        }
+    }
+
+    //game loop 
+    function gameLoop(){
+        if(startFlag){
+            for(i=0;i<note.length;i++){
+                for(j=0;j<note[i].length;j++){
+
+                    downNoteArray[i][j].tick();
+                    downNoteArray[i][j].render();
+                    var saveReturn = downNoteArray[i][j].getTarget();
+                    
+                    if(saveReturn!=undefined){
+                        returnBox.push(saveReturn)
+                        console.log(saveReturn)
+                    }
+                }
+            }
+            collFun();
+        }
+    }
+    //노래 나오게 하는 함수
+    function enableAutoplay() { 
+    dd.style.display = "none";
+    vid.autoplay = true;
+    startFlag= true;
+    vid.load();
+    time = new Date();
+}
+    //스페이스바 누르세요
+    function collFun(){
+        
+       
+
+
+        // var downnoteTop = parseInt( downNoteArray[0][0].div.style.top   );
+        // var downnoteHeight = parseInt( downNoteArray[0][0].div.style.height  );
+        // var targetTop =parseInt(    targetPoint.div.style.top ) ;
+        // var targetHeight=parseInt(    targetPoint.div.style.height ) ;
+
+        
+        // // good ,great 판별
+        // if(downnoteTop+downnoteHeight>targetTop && downnoteTop<targetTop){
+        //     console.log("good",downNoteArray[0][0].div.style.top);
+        // }else if(downnoteTop+downnoteHeight<targetTop+targetHeight && downnoteTop+downnoteHeight>targetTop){
+        //     console.log("great");
+        // }else if(downnoteTop+downnoteHeight>targetTop+targetHeight && downnoteTop<targetTop+targetHeight){
+        //     console.log("good");
+        // }
+
+        //나가린지확인
+        // if(downnoteTop>100){
+        //     console.log("넘어갔어")
+        // }
+        
+    }
+    //스페이스 누르게 하는 텍스트
+    function blinkText(){
+        blink= document.getElementById("textBlink");
+        console.log(blink)
+        blink.style.width = "100%"
+        blink.style.height = "100%"
+        blink.style.float = "left"
+        blink.style.position = "absolute";
+        blink.style.color = "white"
+        blink.innerText = " 1234";
+        
+    }
+  
+    //note 찍을 노트정보 기록하기 
+    function recordeNote(){
+        for(i=0;i<note.length;i++){
+            console.log(i,"번째", note[i])
+        }
+    }
+    function mumchu(){
+        startFlag=!startFlag
+        vid.autoplay = false;
+        vid.pause();
+    }
+
+
+    //오른쪽 배경 만들기
+    function rightboxImg(){
+        var div = document.getElementById("backimg");
+        rightBackImg(div ,selectNum);
+    }
+    function speedUp(){
+        speed -= 5;
+    }
+    function speedDown(){
+        speed +=5;
+    }
+
+    //초기화
+    window.addEventListener("load",function(){
+        init();
+        setInterval("gameLoop()",20);
+    });
+    </script>
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+    #wrapper{
+        width: 1200px;
+        height: 800px;
+        border: 1px solid black;
+        overflow: hidden;
+        margin: auto;
+        position: relative;
+    }
+    #somthingWrap{
+        width: 40%;
+        height: 800px;
+        border: 1px solid black;
+        box-sizing: border-box;
+        float: left;
+    }
+    #backimg{
+        width: 60%;
+        height: 800px;
+        border: 1px solid black;
+        box-sizing: border-box;
+        float: left;
+    }
+    #noteBarWrap{
+        width: 100%;
+        height : 75%;
+        border : 1px solid black;
+        box-sizing: border-box;
+        /* float: left; */
+        overflow: hidden;
+        position: relative;
+        /* object-fit: cover; */
+    }
+    #bar1, #bar2, #bar3, #bar4, #bar5{
+        width: 20%;
+        height : 100%;
+        border : 1px solid black;
+        box-sizing: border-box;
+        float: left;
+    }
+    #noteBarBottomWrap{
+        width: 100%;
+        height : 25%;
+        border : 1px solid black;
+        box-sizing: border-box;
+        float: left;
+        margin: auto;
+    }
+    #button1,#button2,#button3,#button4,#button5{
+        width: 20%;
+        height : 30%;
+        border : 1px solid black;
+        box-sizing: border-box;
+        float: left;
+    }
+    #frameCover{
+        width: 100%;
+        height: 100%;
+        border: 3px solid red;
+        background : url("../images/frame/smallFrame.png");
+        opacity: 0.5;
+        margin: auto;
+        position: absolute;
+    }
+</style>
+
+</head>
+<body>
+    <div id="wrapper">
+        <div id="somthingWrap">
+            <div id="noteBarWrap">
+                <div id="textBlink"></div>
+                <!-- <div id="bar1"></div>
+                <div id="bar2"></div>
+                <div id="bar3"></div>
+                <div id="bar4"></div>
+                <div id="bar5"></div> -->
+            </div>
+            <div id="noteBarBottomWrap">
+                <!-- <div id=targetPointWrap>
+                    <div id=goodPoint>
+                        <div id=greatePoint></div>
+                    </div>
+                </div> 바뤱퍼 위에 붙여야함 -->
+                <!-- <div id="button1"></div>
+                <div id="button2"></div>
+                <div id="button3"></div>
+                <div id="button4"></div>
+                <div id="button5"></div> -->
+                <!-- <div id="score"></div> -->
+            </div>
+        </div>
+        <div id="backimg">
+
+            <button id="dis" onclick="enableAutoplay()" type="button">Enable autoplay</button>
+            <button id="rec" onclick="recordSaveBox()" type="button">record</button>
+            <button onClick="mumchu()">stop</button>
+
+        </div>
+        <!-- <div id="frameCover"></div> -->
+    </div>    
+</body>
+</html>

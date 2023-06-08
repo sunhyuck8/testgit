@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<!-- style 시작------------------------------------------------------------------------------------------------------------------------------------------>
+<style>
+    *{margin: auto;}
+    #wrapper{
+        width: 1200px;
+        height: 800px;
+        margin: auto;
+        position: relative;
+        border: 1px solid black;
+        background: url("images/frame/darkHome.jpg");
+        background-repeat: no-repeat;
+        background-size: cover;
+        overflow: hidden;
+    }
+    #selectBox{
+        width: 400px;
+        height: 600px;
+        margin: auto;
+        position: relative;
+        margin-top: 9%;
+        overflow: hidden; 
+    }
+    #selectBoxCover{
+        width: 480px;
+        height: 560px;
+        margin: auto;
+        position: absolute;
+        left: 350px;
+        top: 10px;
+        background: url("./images/selectFrame.png");
+        background-repeat: no-repeat;
+    }
+    #selectBoxValue{
+        width: 2050px;
+        height: 410px;
+        background-size: 400px 410px; 
+        background-repeat: no-repeat;
+        position: absolute;
+        border : 1px solid red;
+    }
+    #buttonWrapper{
+        width: 480px;
+        height: 100px;
+        top: 70%;
+        margin: auto;
+        position: absolute;
+        box-sizing: border-box;
+    }
+    #buttonWrapper img{
+        width: 200px;
+        height: 60px;
+        margin-top: 10%;
+        margin-left: 10%;
+    }
+  
+</style>
+<!-- style 끝  ------------------------------------------------------------------------------------------------------------------------------------------->
+
+<!-- script 시작 ----------------------------------------------------------------------------------------------------------------------------------------->
+    <audio id="myVideo" >
+    <source src="./game/O2Intro.mp3" type="audio/mp3">
+    </audio> 
+    <!-- 오디오 변수 -->
+
+<script>
+    var pointX=0;
+    var pointY=0; //마우스x,y좌표
+    var prvDownPoint =0;
+    var prvUpPoint =0;
+    var nextDownPoint =0;
+    var nextUpPoint =0; // 드래그 구현을 위한 x,y 좌표
+    var RL ; // 우측인지 왼쪽인지 구별하는 변수
+    var frame;
+    var LoopFlag= true;
+    var targetX =0; //등속도 운동하려고
+    var targetXback= 0;
+    var a =0.1 ;
+
+    var vid = document.getElementById("myVideo");
+    vid.volume = 0.8;
+    vid.autoplay = true;
+    var onmusic = document.getElementById("myVideo");  // 음악 정보
+    var mSrc=0;
+  
+
+    function init(){    //클릭시 해당 이미지 html로 이동 
+        document.querySelector("#buttonWrapper img").addEventListener("click",function(){
+            // location.href="main.html";
+        });
+        frame = document.getElementById("selectBoxValue");
+        selectPic = document.getElementById("#pic");
+        frame.style.left = 0+"px";  // 이줄 안써주면 작동안함 
+ 
+    }
+    
+    function picDrag(status){//드래그 효과
+        var flag = true;
+        if(status=="down"){
+            prvDownPoint = event.clientX;
+            prvUpPoint = event.clientY;
+        }else if(status=="up"){
+            flag = false;
+            nextDownPoint = event.clientX;
+            nextUpPoint = event.clientY;
+        }
+        if(flag == false){
+            pointX = parseInt(prvDownPoint-nextDownPoint);
+            pointY = parseInt(prvUpPoint-nextUpPoint);
+            var result = Math.sqrt(pointX*pointX+pointY*pointY);
+            if(result>100){
+                if(pointX>0){
+                    RL = "left";
+                    mSrc++;
+                    targetXback = targetX;
+                    targetX -= 410;
+                }if(pointX<0){
+                    RL = "right";
+                    mSrc--;
+                    targetXback = targetX;
+                    targetX += 410;
+                }
+                // console.log(result+", "+RL);
+            }
+        }
+    }
+    function frameMove(){
+        if(targetX>0 || targetX <-1640){
+            targetX = targetXback;
+            return;
+        }
+        frame.style.left = parseInt(frame.style.left)+ a*(targetX-parseInt(frame.style.left))+"px";
+    }
+    function pic(){
+        var img = document.createElement("img");
+        img.src = "./images/Poo.jpg";
+        img.style.width = 800+"px";
+        img.style.height = 110+"px";
+        img.style.position = "absolute";
+        img.style.border = "1px solid red";
+
+        // selectPic.appendChild(img);
+    }
+    function gameLoop(){//지속적인 효과
+        if(LoopFlag = true){
+            frameMove();
+        }
+        // console.log(frame.style.left)
+    }
+    function letsPlay(){
+        vid.play();
+    }
+    function playSrc(){
+        if(mSrc>4){
+            mSrc=4;
+        }else if(mSrc<0){
+            mSrc=0;
+        }
+       switch(mSrc){
+           case 0 :vid.src="./static/song/O2Intro.mp3"; break;
+           case 1 :vid.src="./static/song/song1.mp3"; break;
+           case 2 :vid.src="./static/song/song2.mp3"; break;
+           case 3 :vid.src="./static/song/song3.mp3"; break;
+           case 4 :vid.src="./static/song/song4.mp3"; break;
+
+       }
+    }
+    window.addEventListener("load",function(){
+        init();
+        setInterval("gameLoop()",10);
+    });
+</script>
+<!-- script 끝  ------------------------------------------------------------------------------------------------------------------------------------------>
+</head>
+<body>
+    <div id="wrapper" onmousedown="letsPlay()" onmouseup="playSrc()">
+        <div id="selectBox">
+            <div id="selectBoxValue">
+                <img src="./static/pic/O2JameStart.png" width="400px" height="410px">
+                <img src="./static/pic/song1.png" width="400px" height="410px">
+                <img src="./static/pic/song2.png" width="400px" height="410px">
+                <img src="./static/pic/song3.png" width="400px" height="410px">
+                <img src="./static/pic/song4.png" width="400px" height="410px">
+            </div>
+            <div id="buttonWrapper">
+                <img src="images/start4.png " onmouseover="this.src='./images/start5.png'" onmouseout="this.src='./images/start4.png'" onclick="location.href='./game/O2jam.html?mSrc:'+mSrc">
+                <!-- location.href='intro.html'; -->
+            </div>
+        </div>
+        <div id="selectBoxCover"  onmousedown="picDrag('down')" onmouseup="picDrag('up')"></div>
+        <div id="pic"></div>
+    </div>
+</body>
+</html>
+<!---->

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BoardFiles">
+
+	<!-- 게시글 등록 -->
+	<insert id="boardRegist" parameterType="BoardFiles" useGeneratedKeys="true" keyProperty="board_id">
+		insert into board(title, writer, content, filename,like_cnt, view_cnt, type) values(#{title},	#{writer}, #{content},#{filename},0,0,#{type})
+	</insert>
+
+	
+	
+
+</mapper>
